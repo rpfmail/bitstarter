@@ -62,7 +62,14 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
-var buildfn = function(indexfile) {
+var finishJob = function(htmlfile,checks) {
+    var checkJson = checkHtmlFile(htmlfile, checks);
+    var outJson = JSON.stringify(checkJson, null, 4);
+    console.log(outJson);
+}
+
+
+var buildfn = function(indexfile,checks) {
     var response2console = function(result, response) {
 	console.log("in response2console function");
         if (result instanceof Error) {
@@ -70,16 +77,11 @@ var buildfn = function(indexfile) {
         } else {
             console.error("Wrote %s", indexfile);
             fs.writeFileSync(indexfile, result);
+	    finishJob(indexfile,checks)
         }
     };
     return response2console;
 };
-
-var finishJob= function(htmlfile,checks) {
-    var checkJson = checkHtmlFile(htmlfile, checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
-}
 
 if(require.main == module) {
     program
@@ -89,7 +91,7 @@ if(require.main == module) {
 	.parse(process.argv);
     if(typeof(program.url) !== 'undefined') {
 	console.log("Got a url:"+program.url);
-	var response2console = buildfn("index2.html");
+	var response2console = buildfn("index2.html",program.checks);
 	rest.get(program.url).on('complete', response2console);
 	//var htmlfile= "index2.html";
     } else {
